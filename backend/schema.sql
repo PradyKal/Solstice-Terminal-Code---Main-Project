@@ -80,3 +80,48 @@ CREATE TABLE IF NOT EXISTS public.simulations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS sim_ticker_idx ON public.simulations(ticker);
+
+
+-- Added in v2: portfolio intelligence, strategy attribution, visualization payloads
+CREATE TABLE IF NOT EXISTS public.portfolio_metrics (
+  id BIGSERIAL PRIMARY KEY,
+  total_exposure NUMERIC(18,6),
+  net_exposure NUMERIC(18,6),
+  gross_exposure NUMERIC(18,6),
+  cash NUMERIC(18,6),
+  unrealized_pnl NUMERIC(18,6),
+  realized_pnl NUMERIC(18,6),
+  rolling_sharpe NUMERIC(10,4),
+  rolling_sortino NUMERIC(10,4),
+  max_drawdown NUMERIC(10,4),
+  beta_spy NUMERIC(10,4),
+  concentration_hhi NUMERIC(10,6),
+  sector_exposure JSONB,
+  factor_exposure JSONB,
+  regime TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.strategy_performance (
+  id BIGSERIAL PRIMARY KEY,
+  strategy TEXT NOT NULL,
+  weight NUMERIC(6,4),
+  signals_emitted INT,
+  win_rate NUMERIC(6,4),
+  avg_return NUMERIC(10,4),
+  sharpe NUMERIC(10,4),
+  attribution_pnl NUMERIC(18,6),
+  regime TEXT,
+  window_days INT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.visualization_data (
+  id BIGSERIAL PRIMARY KEY,
+  viz_type TEXT NOT NULL,
+  ticker TEXT,
+  scope TEXT,
+  payload JSONB NOT NULL,
+  meta JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
