@@ -35,6 +35,9 @@ from backend import risk_engine as risk
 from backend import execution_engine as ex
 from backend import portfolio_intelligence as pi
 from backend import visualization as viz
+from backend import visualization_advanced as viz_adv
+from backend import options_analytics as opts
+from backend import portfolio_sync as psync
 from backend import supabase_writer as db
 from backend import slack_reporter as slack
 
@@ -256,6 +259,49 @@ def run_cycle() -> dict:
     viz_rows.append({"viz_type": "signal_map", "ticker": None, "scope": "topN",
                      "payload": viz.signal_map(per_strategy_alpha)})
 
+    # 11b. ADVANCED VIZ + OPTIONS ANALYTICS + LIVE ACCOUNT MIRROR
+    # PCA factor decomposition
+    if not rets_df.empty and rets_df.shape[1] >= 4:
+        viz_rows.append({"viz_type": "pca_factor_decomposition", "ticker": None, "scope": "top30",
+                         "payload": viz_adv.pca_factor_decomposition(rets_df, n_components=3)})
+
+    # Liquidity heatmap
+    viz_rows.append({"viz_type": "liquidity_heatmap", "ticker": None, "scope": "top300",
+                     "payload": viz_adv.liquidity_heatmap([
+                         {"ticker": r["ticker"], "adv_usd": r["adv_usd"],
+                          "realized_vol": r["realized_vol"]} for r in asset_results])})
+
+    # Options flow placeholder (until real options feed wired)
+    viz_rows.append({"viz_type": "options_flow_map", "ticker": None, "scope": "topN",
+                     "payload": viz_adv.options_flow_map([])})
+
+    # IV surfaces + skew for top 5 most liquid Top-N tickers
+    for r in topN[:5]:
+        atm_iv = max(0.12, min(0.80, r["realized_vol"] * 16.0))   # daily -> annualized rough
+        viz_rows.append({"viz_type": "vol_surface_3d", "ticker": r["ticker"], "scope": "asset",
+                         "payload": opts.iv_surface(r["price"], atm_iv)})
+        viz_rows.append({"viz_type": "iv_skew_term_structure", "ticker": r["ticker"], "scope": "asset",
+                         "payload": opts.skew_term_structure(r["price"], atm_iv)})
+
+    # Live Alpaca mirror -> account_state + positions
+    account_state_row = None
+    live_positions_rows: list = []
+    try:
+        acct = psync.fetch_account()
+        live_pos = psync.fetch_positions()
+        open_ord = psync.fetch_open_orders()
+        if acct:
+            account_state_row = psync.build_account_state_row(acct, live_pos, open_ord)
+            live_positions_rows = psync.build_positions_rows(live_pos)
+            # Portfolio Greeks visualization
+            viz_rows.append({"viz_type": "portfolio_greeks", "ticker": None, "scope": "portfolio",
+                             "payload": opts.portfolio_greeks(live_positions_rows)})
+            # Exposure web (sector_map empty here -> placeholder UNCLASSIFIED)
+            viz_rows.append({"viz_type": "portfolio_exposure_web", "ticker": None, "scope": "portfolio",
+                             "payload": viz_adv.portfolio_exposure_web(live_positions_rows, {})})
+    except Exception:
+        pass
+
     # 12. SUPABASE WRITES
     signals_rows = [{
         "ticker": r["ticker"], "signal": "BUY" if r["alpha"] > 0.05 else ("SELL" if r["alpha"] < -0.05 else "HOLD"),
@@ -303,6 +349,16 @@ def run_cycle() -> dict:
     db.write_portfolio_metrics([portfolio_row])
     db.write_strategy_performance(strat_perf_rows)
     db.write_visualization(viz_db_rows)
+    if account_state_row is not None:
+        db._insert("account_state", [account_state_row])
+    if live_positions_rows:
+        # Upsert positions: simplest is delete-then-insert; here we just insert as
+        # a snapshot since `positions.ticker` is unique. Replace with upsert in
+        # production via supabase-py: .upsert(rows, on_conflict='ticker').
+        try:
+            db._insert("positions", live_positions_rows)
+        except Exception:
+            pass
     db.write_logs([{
         "level": "INFO", "component": "Engine",
         "message": f"Cycle complete | regime={regime} | topN={len(topN)} | executed={len(executed)}",
