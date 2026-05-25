@@ -40,6 +40,7 @@ from backend import options_analytics as opts
 from backend import portfolio_sync as psync
 from backend import supabase_writer as db
 from backend import slack_reporter as slack
+from backend import webhook_poster as lovable
 
 
 # --------- TUNABLES (also surfaced via env) ----------
@@ -379,6 +380,26 @@ def run_cycle() -> dict:
     })
     if SLACK_CHANNEL:
         slack.send_to_slack(SLACK_CHANNEL, slack.format_digest(cycle))
+
+    # 14. LOVABLE WEBHOOK — push the same cycle payload to the frontend ingest endpoint
+    try:
+        lovable.push_cycle(
+            account_state=account_state_row,
+            signals=signals_rows,
+            trades=trades_rows,
+            positions=live_positions_rows or None,
+            simulations=simulations_rows,
+            portfolio_metrics=[portfolio_row],
+            strategy_performance=strat_perf_rows,
+            visualizations=viz_db_rows,
+            logs=[{
+                "level": "INFO", "component": "Engine",
+                "message": f"cycle_complete regime={regime} topN={len(topN)} executed={len(executed)}",
+            }],
+            regime=regime,
+        )
+    except Exception:
+        pass
 
     return cycle
 
