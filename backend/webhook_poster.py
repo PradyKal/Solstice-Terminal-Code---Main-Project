@@ -23,7 +23,7 @@ import requests
 
 
 WEBHOOK_URL_DEFAULT = (
-    "https://project--49480feb-c516-4d8e-9985-7d344698f026.lovable.app"
+    "https://id-preview--49480feb-c516-4d8e-9985-7d344698f026.lovable.app"
     "/api/public/gumloop/ingest"
 )
 
