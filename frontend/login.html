@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOGIN · SOLSTICE TERMINAL</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="login-page">
+  <div class="login-box">
+    <div class="login-brand">SOLSTICE TERMINAL</div>
+    <form id="login-form">
+      <input type="text" id="username" placeholder="username" autocomplete="off" required />
+      <input type="password" id="password" placeholder="password" autocomplete="off" required />
+      <button type="submit">AUTHENTICATE</button>
+    </form>
+    <div id="login-error" class="login-error"></div>
+    <a href="index.html" class="login-back">&larr; back</a>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

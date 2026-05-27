@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOLSTICE TERMINAL</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="landing">
+  <div class="landing-hero">
+    <img src="assets/hero.jpeg" alt="" class="hero-bg" />
+    <div class="hero-vignette"></div>
+    <div class="hero-overlay">
+      <div class="hero-brand">SOLSTICE TERMINAL</div>
+      <a href="login.html" class="hero-enter">ENTER TERMINAL &rarr;</a>
+    </div>
+    <div class="hero-links" id="hero-links"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script>
+    // Populate landing_links from Supabase
+    (async () => {
+      const client = window.solstice.sb();
+      const { data } = await client
+        .from('landing_links').select('label,url')
+        .order('sort_order', { ascending: true });
+      const links = (data || []).map(l =>
+        `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`
+      ).join('');
+      document.getElementById('hero-links').innerHTML = links;
+    })().catch(() => {});
+  </script>
+</body>
+</html>

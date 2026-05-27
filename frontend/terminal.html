@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOLSTICE TERMINAL</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="terminal-page">
+  <!-- Top header bar: live KPIs from account_state -->
+  <header class="topbar">
+    <div class="topbar-brand">SOLSTICE</div>
+    <div class="topbar-kpis" id="kpis">
+      <div class="kpi"><span>EQUITY</span><b id="kpi-equity">—</b></div>
+      <div class="kpi"><span>BUYING POWER</span><b id="kpi-bp">—</b></div>
+      <div class="kpi"><span>CASH</span><b id="kpi-cash">—</b></div>
+      <div class="kpi"><span>OPEN ORDERS</span><b id="kpi-orders">—</b></div>
+      <div class="kpi"><span>REGIME</span><b id="kpi-regime">—</b></div>
+    </div>
+    <div class="topbar-right">
+      <span class="engine-dot" id="engine-dot" title="engine status"></span>
+      <span class="engine-label" id="engine-label">AWAITING</span>
+      <span class="clock" id="clock"></span>
+      <a href="index.html" class="logout">EXIT</a>
+    </div>
+  </header>
+
+  <!-- Sidebar + Main split -->
+  <div class="layout">
+    <nav class="sidebar">
+      <a href="#analyze"     class="tab active">ANALYZE</a>
+      <a href="#portfolio"   class="tab">PORTFOLIO</a>
+      <a href="#trades"      class="tab">TRADES</a>
+      <a href="#models"      class="tab">MODELS</a>
+      <a href="#simulations" class="tab">SIMULATIONS</a>
+      <a href="#risk"        class="tab">RISK ENGINE</a>
+      <a href="#regime"      class="tab">MARKET REGIME</a>
+      <a href="#attribution" class="tab">ATTRIBUTION</a>
+      <a href="#engine"      class="tab">ENGINE VIEW</a>
+      <a href="#logs"        class="tab">LOGS</a>
+    </nav>
+    <main class="main">
+      <section id="view-analyze"     class="view active"></section>
+      <section id="view-portfolio"   class="view"></section>
+      <section id="view-trades"      class="view"></section>
+      <section id="view-models"      class="view"></section>
+      <section id="view-simulations" class="view"></section>
+      <section id="view-risk"        class="view"></section>
+      <section id="view-regime"      class="view"></section>
+      <section id="view-attribution" class="view"></section>
+      <section id="view-engine"      class="view"></section>
+      <section id="view-logs"        class="view"></section>
+    </main>
+  </div>
+
+  <!-- Libraries: Supabase + Three.js + D3 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+  <!-- App -->
+  <script src="js/config.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/viz.js"></script>
+  <script src="js/tabs/analyze.js"></script>
+  <script src="js/tabs/portfolio.js"></script>
+  <script src="js/tabs/trades.js"></script>
+  <script src="js/tabs/models.js"></script>
+  <script src="js/tabs/simulations.js"></script>
+  <script src="js/tabs/risk.js"></script>
+  <script src="js/tabs/regime.js"></script>
+  <script src="js/tabs/attribution.js"></script>
+  <script src="js/tabs/engine.js"></script>
+  <script src="js/tabs/logs.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
