@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RESEARCH · SOLSTICE</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="app">
+  <div id="shell-top"></div>
+
+  <main class="app-main">
+    <div class="grid c4" style="grid-template-rows: auto auto; gap: 14px;">
+
+      <!-- Signals table — col-2 wide -->
+      <div class="hud col-2 row-2">
+        <div class="hud-h">HIGH-CONFIDENCE SIGNALS<span class="meta" id="sig-count">0</span></div>
+        <div class="hud-body flush" style="max-height: 720px; overflow: auto;">
+          <table class="dt">
+            <thead><tr>
+              <th>TICKER</th><th>SIGNAL</th><th>CONF</th><th>E[R]</th><th>RISK</th><th>PRICE</th><th>REGIME</th><th>TIME</th>
+            </tr></thead>
+            <tbody id="sig-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MC path cloud -->
+      <div class="hud col-2">
+        <div class="hud-h">MONTE CARLO · 100K PATHS<span class="meta" id="mc-ticker">—</span></div>
+        <div class="hud-body viz" id="viz-mc"></div>
+      </div>
+
+      <!-- Risk topology -->
+      <div class="hud col-2">
+        <div class="hud-h">RISK TOPOLOGY · α × E[R] × σ<span class="meta">3D</span></div>
+        <div class="hud-body viz" id="viz-risk"></div>
+      </div>
+
+      <!-- Vol surface -->
+      <div class="hud col-2">
+        <div class="hud-h">IMPLIED VOL SURFACE<span class="meta" id="vol-ticker">—</span></div>
+        <div class="hud-body viz" id="viz-vol"></div>
+      </div>
+
+      <!-- PCA -->
+      <div class="hud col-2">
+        <div class="hud-h">PCA FACTOR DECOMPOSITION<span class="meta">PC1·PC2·PC3</span></div>
+        <div class="hud-body viz" id="viz-pca"></div>
+      </div>
+
+      <!-- Correlation network -->
+      <div class="hud col-2">
+        <div class="hud-h">CORRELATION NETWORK<span class="meta">|ρ| ≥ 0.55</span></div>
+        <div class="hud-body viz" id="viz-network"></div>
+      </div>
+
+      <!-- Liquidity heatmap -->
+      <div class="hud col-2">
+        <div class="hud-h">LIQUIDITY × VOL HEATMAP<span class="meta">deciles</span></div>
+        <div class="hud-body viz" id="viz-liq"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="shell-bottom"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="js/config.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/viz.js"></script>
+  <script src="js/pages/research.js"></script>
+</body>
+</html>

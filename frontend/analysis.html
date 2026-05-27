@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANALYSIS · SOLSTICE</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="app">
+  <div id="shell-top"></div>
+
+  <main class="app-main">
+    <!-- Ticker input bar -->
+    <div class="hud" style="margin-bottom: 14px;">
+      <div class="hud-h">DEEP TICKER ANALYSIS<span class="meta">enter symbol</span></div>
+      <div class="hud-body">
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <input id="ticker-input" type="text" placeholder="AAPL, NVDA, BTC-USD…"
+                 style="background: var(--bg-0); border: 1px solid var(--border); color: var(--cyan);
+                        padding: 10px 14px; flex: 1; font-size: 14px; outline: none; letter-spacing: 0.15em;" />
+          <button id="ticker-load"
+                  style="background: var(--cyan-soft); border: 1px solid var(--cyan); color: var(--cyan);
+                         padding: 10px 28px; font-family: var(--display); letter-spacing: 0.3em;
+                         font-size: 11px; cursor: pointer;">LOAD</button>
+          <div class="dim" style="margin-left: 16px; font-size: 10px; letter-spacing: 0.2em;">
+            quick picks:
+            <a href="#" data-q="AAPL" class="cyan" style="margin: 0 8px;">AAPL</a>
+            <a href="#" data-q="NVDA" class="cyan" style="margin: 0 8px;">NVDA</a>
+            <a href="#" data-q="TSLA" class="cyan" style="margin: 0 8px;">TSLA</a>
+            <a href="#" data-q="BTC-USD" class="cyan" style="margin: 0 8px;">BTC-USD</a>
+            <a href="#" data-q="SPY" class="cyan" style="margin: 0 8px;">SPY</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="analysis-empty" class="hud" style="padding: 80px 20px;">
+      <div class="empty">› ENTER A TICKER ABOVE TO BEGIN ANALYSIS</div>
+    </div>
+
+    <div id="analysis-content" style="display: none;">
+      <!-- Feature snapshot -->
+      <div class="hud" style="margin-bottom: 14px;">
+        <div class="hud-h">FEATURE SNAPSHOT<span class="meta" id="snap-ticker">—</span></div>
+        <div class="hud-body">
+          <div class="grid c6" id="feature-grid"></div>
+        </div>
+      </div>
+
+      <!-- Stock signal history -->
+      <div class="hud" style="margin-bottom: 14px;">
+        <div class="hud-h">SIGNAL HISTORY<span class="meta" id="hist-count">—</span></div>
+        <div class="hud-body flush" style="max-height: 280px; overflow: auto;">
+          <table class="dt">
+            <thead><tr>
+              <th>TIME</th><th>SIGNAL</th><th>CONF</th><th>E[R]</th><th>RISK</th><th>PRICE</th><th>REGIME</th><th>RATIONALE</th>
+            </tr></thead>
+            <tbody id="hist-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid c2">
+        <div class="hud">
+          <div class="hud-h">MC SIMULATION · 21-DAY HORIZON<span class="meta">100K paths</span></div>
+          <div class="hud-body viz" id="viz-mc"></div>
+        </div>
+        <div class="hud">
+          <div class="hud-h">IMPLIED VOL SURFACE<span class="meta">3D</span></div>
+          <div class="hud-body viz" id="viz-vol"></div>
+        </div>
+        <div class="hud">
+          <div class="hud-h">RETURN DISTRIBUTION<span class="meta">PDF</span></div>
+          <div class="hud-body viz" id="viz-pdf"></div>
+        </div>
+        <div class="hud">
+          <div class="hud-h">IV SKEW × TERM<span class="meta">25Δ RR</span></div>
+          <div class="hud-body viz" id="viz-skew"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="shell-bottom"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="js/config.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/viz.js"></script>
+  <script src="js/pages/analysis.js"></script>
+</body>
+</html>

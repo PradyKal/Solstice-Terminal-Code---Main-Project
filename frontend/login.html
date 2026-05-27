@@ -8,28 +8,22 @@
 </head>
 <body class="login-page">
   <div class="login-box">
-    <div class="login-header">
-      <div class="login-brand">SOLSTICE TERMINAL</div>
-      <div class="login-sub">SECURE AUTH · v3.2</div>
-    </div>
-    <div class="login-boot" id="boot">
-      <div class="step">init crypto module</div>
-      <div class="step">connect supabase rpc</div>
-      <div class="step">verify bcrypt handler</div>
-      <div class="step ok">› ready for authentication</div>
-    </div>
+    <div class="login-brand">SOLSTICE</div>
+    <div class="login-sub">SECURE TERMINAL ACCESS · v5.0</div>
+    <div class="login-boot" id="boot"></div>
     <form id="login-form" autocomplete="off">
-      <label>USERNAME</label>
-      <input type="text" id="username" placeholder="operator" required />
+      <label>OPERATOR</label>
+      <input type="text" id="username" placeholder="username" required />
       <label>PASSPHRASE</label>
       <input type="password" id="password" placeholder="••••••••" required />
       <button type="submit">AUTHENTICATE</button>
     </form>
     <div id="login-error" class="login-error"></div>
-    <a href="index.html" class="login-back">‹ ABORT</a>
+    <a href="index.html" class="login-back">‹ RETURN TO SYSTEM</a>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
+  <script>window.solstice.particles(25);</script>
 </body>
 </html>

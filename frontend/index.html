@@ -6,51 +6,100 @@
   <title>SOLSTICE TERMINAL · Quantitative Intelligence System</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body class="landing">
-  <div class="landing-hero">
-    <img src="assets/hero.png" alt="" class="hero-bg" />
-    <div class="hero-vignette"></div>
+<body class="home">
+  <div class="home-wrap">
 
-    <div class="hero-overlay">
-      <div class="hero-top">
-        <div class="hero-brand">SOLSTICE&nbsp;TERMINAL</div>
-        <div class="hero-status">
-          <span><span class="dot"></span> ENGINE</span>
-          <span><span class="dot"></span> ALPACA</span>
-          <span><span class="dot"></span> SUPABASE</span>
-        </div>
-      </div>
-
-      <div class="hero-mid">
-        <div class="hero-tagline">
-          AUTONOMOUS QUANTITATIVE INTELLIGENCE<br />
-          <em>institutional-grade systematic research desk</em><br />
-          monte-carlo · stochastic modeling · risk-adjusted execution
-        </div>
-        <a href="login.html" class="hero-enter">ENTER&nbsp;TERMINAL →</a>
-      </div>
-
-      <div class="hero-bottom">
-        <div class="hero-meta">
-          <div><b>BUILD</b>&nbsp;&nbsp;v3.2 · production</div>
-          <div><b>ENGINE</b>&nbsp;cron */15 · 9-16 ET · mon-fri</div>
-          <div><b>UNIVERSE</b>&nbsp;794 assets · top-300 liquidity</div>
-        </div>
-        <div class="hero-links" id="hero-links"></div>
+    <div class="home-bar bracket">
+      <div class="home-logo">SOLSTICE</div>
+      <div class="home-status">
+        <span><span class="ok"></span> ENGINE</span>
+        <span><span class="ok"></span> ALPACA</span>
+        <span><span class="ok"></span> SUPABASE</span>
+        <span><span class="ok"></span> SLACK</span>
       </div>
     </div>
+
+    <section class="home-hero">
+      <div class="home-hero-text">
+        <div class="home-eyebrow">QUANTITATIVE&nbsp;INTELLIGENCE&nbsp;SYSTEM</div>
+        <h1 class="home-title">SOLSTICE<br>TERMINAL</h1>
+        <p class="home-sub">
+          An autonomous <em>institutional-grade</em> quantitative research desk built on a deterministic strategy stack, vectorized 100K-path Monte-Carlo simulation, ATR-scaled risk engine, and live Alpaca paper execution. Continuous cross-sectional alpha discovery across <em>794 assets</em> · stocks, ETFs, futures, crypto.
+        </p>
+        <a href="login.html" class="home-enter">INITIATE&nbsp;TERMINAL&nbsp;ACCESS</a>
+      </div>
+
+      <div class="home-arch">
+        <img src="assets/architecture.png" alt="Solstice Architecture" />
+        <div class="home-arch-label">SYSTEM&nbsp;ARCHITECTURE</div>
+      </div>
+    </section>
+
+    <section class="home-stats">
+      <div class="home-stat bracket">
+        <div class="v">794</div>
+        <div class="l">ASSET UNIVERSE</div>
+      </div>
+      <div class="home-stat bracket">
+        <div class="v">100K</div>
+        <div class="l">MC PATHS / TICK</div>
+      </div>
+      <div class="home-stat bracket">
+        <div class="v">7</div>
+        <div class="l">STRATEGY MODULES</div>
+      </div>
+      <div class="home-stat bracket">
+        <div class="v">15m</div>
+        <div class="l">CYCLE INTERVAL</div>
+      </div>
+      <div class="home-stat bracket">
+        <div class="v">300</div>
+        <div class="l">LIQUIDITY SCREEN</div>
+      </div>
+      <div class="home-stat bracket">
+        <div class="v" id="stat-latency">—</div>
+        <div class="l">LAST CYCLE</div>
+      </div>
+    </section>
+
+    <section class="home-explain">
+      <div class="home-card bracket">
+        <div class="home-card-h">DATA INGESTION</div>
+        <p>Continuous OHLCV ingest across <span class="cyan">stocks, ETFs, crypto, futures</span>. Liquidity-ranked top 300 by 5-day dollar volume. Alpaca account state mirrored every cycle.</p>
+      </div>
+      <div class="home-card bracket">
+        <div class="home-card-h">DECISION ENGINE</div>
+        <p>Deterministic strategy stack — momentum, mean reversion, vol breakout, trend, RS, flow, regime-sensitive. Meta-model with weekly inverse-vol rebalancing. <span class="cyan">No mid-run self-modification.</span></p>
+      </div>
+      <div class="home-card bracket">
+        <div class="home-card-h">RISK + EXECUTION</div>
+        <p>ATR volatility sizing · $100k portfolio heat cap · $5M ADV floor · 30-min cooldown · market-hours gated paper execution via Alpaca REST.</p>
+      </div>
+    </section>
+
+    <footer class="home-foot">
+      <div>BUILD · v5.0 · PRODUCTION</div>
+      <div class="home-foot-links" id="home-links"></div>
+    </footer>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script>
+    window.solstice.particles(40);
     (async () => {
       try {
         const client = window.solstice.sb();
         const { data } = await client.from('landing_links').select('label,url').order('sort_order');
-        const links = (data || []).map(l =>
-          `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`
-        ).join('');
-        document.getElementById('hero-links').innerHTML = links;
+        document.getElementById('home-links').innerHTML = (data || [])
+          .map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`).join('');
+        const { data: logs } = await client.from('logs').select('created_at')
+          .order('created_at', { ascending: false }).limit(1);
+        if (logs?.[0]) {
+          const min = Math.floor((Date.now() - new Date(logs[0].created_at).getTime()) / 60000);
+          document.getElementById('stat-latency').textContent =
+            min < 1 ? '<1m' : (min < 60 ? min + 'm' : Math.floor(min/60) + 'h');
+        }
       } catch (_) {}
     })();
   </script>

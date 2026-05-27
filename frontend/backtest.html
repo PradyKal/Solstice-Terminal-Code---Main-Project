@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BACKTEST · SOLSTICE</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="app">
+  <div id="shell-top"></div>
+
+  <main class="app-main">
+    <div class="grid c3" style="margin-bottom: 14px;">
+
+      <!-- Controls (col-1) -->
+      <div class="hud">
+        <div class="hud-h">PARAMETER SWEEP<span class="meta">live</span></div>
+        <div class="hud-body">
+          <div class="slider-row">
+            <label>MOMENTUM</label>
+            <input type="range" id="w-mom" min="0" max="60" value="22" />
+            <span class="val" id="v-mom">0.22</span>
+          </div>
+          <div class="slider-row">
+            <label>REVERSION</label>
+            <input type="range" id="w-rev" min="0" max="60" value="16" />
+            <span class="val" id="v-rev">0.16</span>
+          </div>
+          <div class="slider-row">
+            <label>VOL BREAKOUT</label>
+            <input type="range" id="w-vol" min="0" max="60" value="10" />
+            <span class="val" id="v-vol">0.10</span>
+          </div>
+          <div class="slider-row">
+            <label>TREND FOLLOW</label>
+            <input type="range" id="w-trend" min="0" max="60" value="18" />
+            <span class="val" id="v-trend">0.18</span>
+          </div>
+          <div class="slider-row">
+            <label>REL STRENGTH</label>
+            <input type="range" id="w-rs" min="0" max="60" value="12" />
+            <span class="val" id="v-rs">0.12</span>
+          </div>
+          <div class="slider-row">
+            <label>FLOW</label>
+            <input type="range" id="w-flow" min="0" max="60" value="10" />
+            <span class="val" id="v-flow">0.10</span>
+          </div>
+          <div class="slider-row">
+            <label>REGIME ADJ</label>
+            <input type="range" id="w-reg" min="0" max="60" value="12" />
+            <span class="val" id="v-reg">0.12</span>
+          </div>
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 14px 0;" />
+          <div class="slider-row">
+            <label>RISK / TRADE</label>
+            <input type="range" id="r-risk" min="100" max="2000" step="50" value="500" />
+            <span class="val" id="v-risk">$500</span>
+          </div>
+          <div class="slider-row">
+            <label>HEAT CAP</label>
+            <input type="range" id="r-heat" min="25" max="500" step="5" value="100" />
+            <span class="val" id="v-heat">$100k</span>
+          </div>
+          <div class="slider-row">
+            <label>MIN CONF</label>
+            <input type="range" id="r-conf" min="50" max="95" value="75" />
+            <span class="val" id="v-conf">0.75</span>
+          </div>
+          <button id="run" style="width: 100%; margin-top: 14px; padding: 12px;
+            background: var(--cyan-soft); border: 1px solid var(--cyan); color: var(--cyan);
+            font-family: var(--display); letter-spacing: 0.3em; font-size: 11px; cursor: pointer;">
+            RUN BACKTEST
+          </button>
+        </div>
+      </div>
+
+      <!-- Equity curve preview (col-2) -->
+      <div class="hud col-2">
+        <div class="hud-h">EQUITY CURVE PREVIEW<span class="meta">strategies overlay</span></div>
+        <div class="hud-body viz" id="equity-viz"></div>
+      </div>
+
+      <!-- Outputs row -->
+      <div class="stat-card bracket">
+        <div class="l">EXPECTED EDGE</div>
+        <div class="v" id="o-edge">—</div>
+        <div class="delta">basis points / cycle</div>
+      </div>
+      <div class="stat-card bracket">
+        <div class="l">PROJECTED SHARPE</div>
+        <div class="v" id="o-sharpe">—</div>
+        <div class="delta">annualized</div>
+      </div>
+      <div class="stat-card bracket">
+        <div class="l">MAX DRAWDOWN</div>
+        <div class="v" id="o-mdd">—</div>
+        <div class="delta">90-day window</div>
+      </div>
+
+      <!-- Sensitivity scatter -->
+      <div class="hud col-3">
+        <div class="hud-h">RISK / RETURN SENSITIVITY<span class="meta">parameter sweep</span></div>
+        <div class="hud-body viz" id="sense-viz" style="height: 320px;"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="shell-bottom"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="js/config.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/viz.js"></script>
+  <script src="js/pages/backtest.js"></script>
+</body>
+</html>

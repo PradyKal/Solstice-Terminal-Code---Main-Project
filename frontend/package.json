@@ -1,9 +1,1 @@
-{
-  "name": "solstice-terminal",
-  "version": "1.0.0",
-  "description": "Static Bloomberg-style quant terminal frontend",
-  "scripts": {
-    "dev": "python3 -m http.server 8080",
-    "deploy": "vercel --prod"
-  }
-}
+{"name":"solstice-terminal","version":"5.0.0","scripts":{"dev":"python3 -m http.server 8080"}}

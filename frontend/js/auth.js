@@ -1,28 +1,17 @@
-// Login flow with cinematic boot sequence + Supabase RPC verify
 const bootSteps = [
-  'init crypto module',
-  'connect supabase rpc',
+  'init secure crypto module',
+  'establish supabase tls',
   'verify bcrypt handler',
-  'establish secure channel',
   'load auth schema',
   '› ready for authentication',
 ];
 const bootEl = document.getElementById('boot');
-let _bootRun = false;
-function runBoot() {
-  if (_bootRun) return;
-  _bootRun = true;
-  bootEl.innerHTML = '';
-  bootSteps.forEach((s, i) => {
-    setTimeout(() => {
-      const div = document.createElement('div');
-      div.className = 'step' + (s.startsWith('›') ? ' ok' : '');
-      div.textContent = s;
-      bootEl.appendChild(div);
-    }, i * 200);
-  });
-}
-runBoot();
+bootSteps.forEach((s, i) => setTimeout(() => {
+  const div = document.createElement('div');
+  div.className = 'step' + (s.startsWith('›') ? ' ok' : '');
+  div.textContent = s;
+  bootEl.appendChild(div);
+}, i * 180));
 
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -33,40 +22,19 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   err.textContent = '› authenticating…';
 
   try {
-    const client = window.solstice.sb();
-    const { data, error } = await client.rpc('verify_user', {
-      p_username: u, p_password: p,
-    });
-
-    if (error) {
-      err.style.color = '#ef4444';
-      err.textContent = '✗ RPC error: ' + (error.message || JSON.stringify(error));
-      console.error('verify_user error:', error);
-      return;
-    }
-    if (!data) {
-      err.style.color = '#f59e0b';
-      err.textContent = '✗ no response from server';
-      return;
-    }
-    if (data.ok === true) {
-      sessionStorage.setItem('solstice_user', u);
-      sessionStorage.setItem('solstice_role', data.role || 'user');
-      err.style.color = '#10b981';
-      err.textContent = '✓ authenticated · entering terminal';
-      setTimeout(() => {
-        try { window.top.location.href = 'terminal.html'; } catch(_) {}
-        try { window.parent.location.href = 'terminal.html'; } catch(_) {}
-        window.location.assign('terminal.html');
-        window.location.href = 'terminal.html';
-      }, 350);
-    } else {
-      err.style.color = '#ef4444';
-      err.textContent = '✗ AUTH FAILED · ' + (data.reason || 'unknown');
-    }
+    const { data, error } = await window.solstice.sb().rpc('verify_user', { p_username: u, p_password: p });
+    if (error) { err.style.color = '#ef4444'; err.textContent = '✗ ' + error.message; return; }
+    if (!data?.ok) { err.style.color = '#ef4444'; err.textContent = '✗ ' + (data?.reason || 'failed'); return; }
+    sessionStorage.setItem('solstice_user', u);
+    sessionStorage.setItem('solstice_role', data.role || 'user');
+    err.style.color = '#10b981';
+    err.textContent = '✓ authenticated · entering terminal';
+    setTimeout(() => {
+      try { window.top.location.href = 'research.html'; } catch(_) {}
+      window.location.assign('research.html');
+    }, 350);
   } catch (ex) {
     err.style.color = '#ef4444';
-    err.textContent = '✗ fatal: ' + ex.message;
-    console.error(ex);
+    err.textContent = '✗ ' + ex.message;
   }
 });

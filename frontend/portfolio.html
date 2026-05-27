@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PORTFOLIO · SOLSTICE</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="app">
+  <div id="shell-top"></div>
+
+  <main class="app-main">
+    <!-- Top stat cards -->
+    <div class="grid c4" style="margin-bottom: 14px;">
+      <div class="stat-card bracket">
+        <div class="l">PORTFOLIO EQUITY</div>
+        <div class="v" id="s-equity">—</div>
+        <div class="delta" id="s-equity-delta">—</div>
+      </div>
+      <div class="stat-card bracket">
+        <div class="l">DAY P&L</div>
+        <div class="v" id="s-daypl">—</div>
+        <div class="delta" id="s-daypl-pct">—</div>
+      </div>
+      <div class="stat-card bracket">
+        <div class="l">BUYING POWER</div>
+        <div class="v" id="s-bp">—</div>
+        <div class="delta" id="s-cash">CASH —</div>
+      </div>
+      <div class="stat-card bracket">
+        <div class="l">ROLLING SHARPE 60D</div>
+        <div class="v" id="s-sharpe">—</div>
+        <div class="delta" id="s-mdd">MDD —</div>
+      </div>
+    </div>
+
+    <div class="grid c2" style="margin-bottom: 14px;">
+      <!-- Positions table -->
+      <div class="hud">
+        <div class="hud-h">OPEN POSITIONS<span class="meta" id="pos-count">0</span></div>
+        <div class="hud-body flush" style="max-height: 480px; overflow: auto;">
+          <table class="dt">
+            <thead><tr>
+              <th>TICKER</th><th>QTY</th><th>AVG</th><th>MARK</th><th>MKT VAL</th><th>U-PnL</th><th>%</th>
+            </tr></thead>
+            <tbody id="pos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Allocation donut + summary -->
+      <div class="hud">
+        <div class="hud-h">ALLOCATION<span class="meta">by ticker</span></div>
+        <div class="hud-body viz" id="donut" style="height: 480px;"></div>
+      </div>
+    </div>
+
+    <div class="grid c2">
+      <!-- Recent trades -->
+      <div class="hud">
+        <div class="hud-h">RECENT EXECUTIONS<span class="meta" id="trd-count">0</span></div>
+        <div class="hud-body flush" style="max-height: 420px; overflow: auto;">
+          <table class="dt">
+            <thead><tr>
+              <th>TIME</th><th>TICKER</th><th>SIDE</th><th>QTY</th><th>ENTRY</th><th>STATUS</th><th>CONF</th>
+            </tr></thead>
+            <tbody id="trd-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Portfolio metrics list -->
+      <div class="hud">
+        <div class="hud-h">PORTFOLIO METRICS<span class="meta">latest cycle</span></div>
+        <div class="hud-body" id="pm-body">
+          <div class="empty">AWAITING ENGINE</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="shell-bottom"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="js/config.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/viz.js"></script>
+  <script src="js/pages/portfolio.js"></script>
+</body>
+</html>
