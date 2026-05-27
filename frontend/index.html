@@ -3,33 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SOLSTICE TERMINAL</title>
+  <title>SOLSTICE TERMINAL · Quantitative Intelligence System</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="landing">
   <div class="landing-hero">
     <img src="assets/hero.png" alt="" class="hero-bg" />
     <div class="hero-vignette"></div>
+
     <div class="hero-overlay">
-      <div class="hero-brand">SOLSTICE TERMINAL</div>
-      <a href="login.html" class="hero-enter">ENTER TERMINAL &rarr;</a>
+      <div class="hero-top">
+        <div class="hero-brand">SOLSTICE&nbsp;TERMINAL</div>
+        <div class="hero-status">
+          <span><span class="dot"></span> ENGINE</span>
+          <span><span class="dot"></span> ALPACA</span>
+          <span><span class="dot"></span> SUPABASE</span>
+        </div>
+      </div>
+
+      <div class="hero-mid">
+        <div class="hero-tagline">
+          AUTONOMOUS QUANTITATIVE INTELLIGENCE<br />
+          <em>institutional-grade systematic research desk</em><br />
+          monte-carlo · stochastic modeling · risk-adjusted execution
+        </div>
+        <a href="login.html" class="hero-enter">ENTER&nbsp;TERMINAL →</a>
+      </div>
+
+      <div class="hero-bottom">
+        <div class="hero-meta">
+          <div><b>BUILD</b>&nbsp;&nbsp;v3.2 · production</div>
+          <div><b>ENGINE</b>&nbsp;cron */15 · 9-16 ET · mon-fri</div>
+          <div><b>UNIVERSE</b>&nbsp;794 assets · top-300 liquidity</div>
+        </div>
+        <div class="hero-links" id="hero-links"></div>
+      </div>
     </div>
-    <div class="hero-links" id="hero-links"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script>
-    // Populate landing_links from Supabase
     (async () => {
-      const client = window.solstice.sb();
-      const { data } = await client
-        .from('landing_links').select('label,url')
-        .order('sort_order', { ascending: true });
-      const links = (data || []).map(l =>
-        `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`
-      ).join('');
-      document.getElementById('hero-links').innerHTML = links;
-    })().catch(() => {});
+      try {
+        const client = window.solstice.sb();
+        const { data } = await client.from('landing_links').select('label,url').order('sort_order');
+        const links = (data || []).map(l =>
+          `<a href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`
+        ).join('');
+        document.getElementById('hero-links').innerHTML = links;
+      } catch (_) {}
+    })();
   </script>
 </body>
 </html>

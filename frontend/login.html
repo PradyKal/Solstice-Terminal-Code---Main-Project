@@ -3,19 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LOGIN · SOLSTICE TERMINAL</title>
+  <title>AUTH · SOLSTICE TERMINAL</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body class="login-page">
   <div class="login-box">
-    <div class="login-brand">SOLSTICE TERMINAL</div>
-    <form id="login-form">
-      <input type="text" id="username" placeholder="username" autocomplete="off" required />
-      <input type="password" id="password" placeholder="password" autocomplete="off" required />
+    <div class="login-header">
+      <div class="login-brand">SOLSTICE TERMINAL</div>
+      <div class="login-sub">SECURE AUTH · v3.2</div>
+    </div>
+    <div class="login-boot" id="boot">
+      <div class="step">init crypto module</div>
+      <div class="step">connect supabase rpc</div>
+      <div class="step">verify bcrypt handler</div>
+      <div class="step ok">› ready for authentication</div>
+    </div>
+    <form id="login-form" autocomplete="off">
+      <label>USERNAME</label>
+      <input type="text" id="username" placeholder="operator" required />
+      <label>PASSPHRASE</label>
+      <input type="password" id="password" placeholder="••••••••" required />
       <button type="submit">AUTHENTICATE</button>
     </form>
     <div id="login-error" class="login-error"></div>
-    <a href="index.html" class="login-back">&larr; back</a>
+    <a href="index.html" class="login-back">‹ ABORT</a>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
