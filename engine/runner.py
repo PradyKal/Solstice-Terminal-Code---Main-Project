@@ -293,16 +293,46 @@ def job_risk_check():
     return {'unprotected': unprotected, 'daily_pnl': daily_change}
 
 
+def convert_stops_to_trailing(trail_percent=8.0):
+    """
+    Ensure every open position has a broker-side TRAILING stop (auto-ratchets
+    up daily as price rises → locks profit with ZERO agent runs Tue-Fri).
+    Cancels fixed stops/take-profits and replaces with GTC trailing stops.
+    """
+    pos = positions()
+    oo = open_orders()
+    # cancel existing sell-side protective orders
+    for o in oo:
+        if o.get('side') == 'sell' and o.get('type') in ('stop','limit','stop_limit'):
+            alpaca('DELETE', f"/orders/{o['id']}")
+    time.sleep(1)
+    placed = []
+    for p in pos:
+        qty = int(float(p['qty']))
+        if qty <= 0: continue
+        body = {'symbol': p['symbol'], 'qty': str(qty), 'side': 'sell',
+                'type': 'trailing_stop', 'trail_percent': str(trail_percent),
+                'time_in_force': 'gtc',
+                'client_order_id': f"trail-{int(time.time())}-{p['symbol']}"}
+        r = alpaca('POST', '/orders', body)
+        if isinstance(r, dict) and r.get('id'):
+            placed.append(p['symbol'])
+        time.sleep(0.15)
+    return placed
+
+
 def job_weekly():
     """
-    ONE-SHOT WEEKLY: prep + rebalance in a single agent run (token-efficient).
-    Runs Monday ~09:35 ET when market is open. Builds target portfolio AND
-    places bracket orders the same run. Broker enforces stops/targets all week.
+    ONE-SHOT WEEKLY: prep + rebalance + trailing-stop protection in a single run.
+    Trailing stops then manage risk autonomously Tue-Fri (broker-side, 0 tokens).
     """
     prep = job_prep()
     time.sleep(1)
     rebal = job_rebalance()
-    return {'prep': prep, 'rebalance': rebal}
+    time.sleep(2)   # let new entries fill
+    trails = convert_stops_to_trailing(trail_percent=8.0)
+    slack(f"🛡 Trailing stops active on {len(trails)} positions (8% trail · auto-ratchets daily)")
+    return {'prep': prep, 'rebalance': rebal, 'trailing_stops': len(trails)}
 
 
 def dispatch():
