@@ -129,7 +129,11 @@ def job_prep():
     port_vol = float(np.mean(cand_vols)) if cand_vols else 0.012
     vol_scalar = rm.vol_target_scalar(port_vol, target_annual_vol=0.15)
     risk_scalar = exp_mult * vol_scalar
-    print(f'  risk: dd={rm.drawdown()*100:.1f}% exp_mult={exp_mult:.2f} vol_scalar={vol_scalar:.2f} → {risk_scalar:.2f}')
+    # ── MARKET REGIME OVERLAY: cut exposure in downtrends (capital protection) ──
+    mkt_mult, mkt_state = market_filter()
+    risk_scalar *= mkt_mult
+    print(f'  risk: dd={rm.drawdown()*100:.1f}% exp_mult={exp_mult:.2f} vol_scalar={vol_scalar:.2f} '
+          f'market={mkt_state}(×{mkt_mult:.2f}) → {risk_scalar:.2f}')
 
     # ── PORTFOLIO MANAGER: build strategy SLEEVES ──
     # Each strategy nominates its top names; PM allocates capital across sleeves
@@ -321,6 +325,64 @@ def convert_stops_to_trailing(trail_percent=8.0):
     return placed
 
 
+def market_filter():
+    """
+    REGIME DE-RISK OVERLAY — the #1 capital protector.
+    Checks SPY vs its 200-day MA and short-term trend. Returns an exposure
+    multiplier: full risk in healthy uptrends, sharply reduced in downtrends.
+    This is what keeps the book alive through bear markets.
+    """
+    try:
+        data, _ = data_cache.get_universe_data(['SPY'], period='2y')
+        spy = data.get('SPY', {}).get('close')
+        if spy is None or len(spy) < 200:
+            return 1.0, 'unknown'
+        ma200 = float(np.mean(spy[-200:]))
+        ma50  = float(np.mean(spy[-50:]))
+        price = float(spy[-1])
+        if price > ma200 and ma50 > ma200:
+            return 1.0, 'risk_on'          # healthy uptrend → full exposure
+        if price > ma200 and ma50 <= ma200:
+            return 0.7, 'caution'          # above 200 but 50 rolling over
+        if price <= ma200 and price > ma200 * 0.95:
+            return 0.4, 'risk_off'         # just below 200DMA → de-risk
+        return 0.15, 'bear'                # deep below 200DMA → near cash
+    except Exception:
+        return 1.0, 'unknown'
+
+
+def job_scorecard():
+    """
+    LIVE PERFORMANCE ATTRIBUTION — reads Alpaca portfolio history, computes
+    realized returns / Sharpe / drawdown, and posts a weekly scorecard.
+    Grounds strategy decisions in REAL pnl, not just backtests.
+    """
+    try:
+        hist = alpaca('GET', '/account/portfolio/history?period=1M&timeframe=1D')
+        eq = hist.get('equity', []) if isinstance(hist, dict) else []
+        eq = [e for e in eq if e]
+        if len(eq) < 3:
+            return {'no_history': True}
+        eq = np.array(eq, dtype=float)
+        rets = np.diff(eq) / eq[:-1]
+        total_ret = eq[-1] / eq[0] - 1
+        ann_sharpe = (np.mean(rets) / (np.std(rets) + 1e-9)) * np.sqrt(252)
+        cummax = np.maximum.accumulate(eq)
+        max_dd = float(((eq - cummax) / cummax).min())
+        win_days = float((rets > 0).mean())
+        msg = ['📈 *SOLSTICE · WEEKLY SCORECARD*',
+               f'Equity ${eq[-1]:,.0f}  ·  30d return {total_ret*100:+.2f}%',
+               f'Sharpe {ann_sharpe:+.2f}  ·  Max DD {max_dd*100:.1f}%  ·  Win days {win_days*100:.0f}%']
+        slack('\n'.join(msg))
+        sb_insert('portfolio_metrics', [{
+            'equity': float(eq[-1]), 'rolling_sharpe': float(ann_sharpe),
+            'max_drawdown': float(max_dd),
+        }])
+        return {'sharpe': float(ann_sharpe), 'total_ret': float(total_ret), 'max_dd': max_dd}
+    except Exception as e:
+        return {'error': str(e)}
+
+
 def job_weekly():
     """
     ONE-SHOT WEEKLY: prep + rebalance + trailing-stop protection in a single run.
@@ -332,7 +394,8 @@ def job_weekly():
     time.sleep(2)   # let new entries fill
     trails = convert_stops_to_trailing(trail_percent=8.0)
     slack(f"🛡 Trailing stops active on {len(trails)} positions (8% trail · auto-ratchets daily)")
-    return {'prep': prep, 'rebalance': rebal, 'trailing_stops': len(trails)}
+    scorecard = job_scorecard()
+    return {'prep': prep, 'rebalance': rebal, 'trailing_stops': len(trails), 'scorecard': scorecard}
 
 
 def dispatch():
