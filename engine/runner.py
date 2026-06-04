@@ -13,6 +13,7 @@ from alpha.strategies_v2 import STRATEGIES, backtest_with_costs
 from alpha.ensemble import sharpe_weighted_ensemble, estimate_position_params, kelly_position_size
 from alpha import news_sentiment as news
 from alpha.risk_manager import RiskManager, PortfolioManager, SECTOR_OF
+from alpha import take_profit
 from alpha import rigor
 
 # ─── CONFIG ─────
@@ -398,10 +399,19 @@ def job_weekly():
     time.sleep(1)
     rebal = job_rebalance()
     time.sleep(2)   # let new entries fill
-    trails = convert_stops_to_trailing(trail_percent=8.0)
-    slack(f"🛡 Trailing stops active on {len(trails)} positions (8% trail · auto-ratchets daily)")
+    # PROFIT-TAKING + tiered trailing stops (scale out winners, tighten trails as gains grow)
+    H_AL = {'APCA-API-KEY-ID': ALPACA_KEY, 'APCA-API-SECRET-KEY': ALPACA_SECRET, 'Content-Type':'application/json'}
+    acts = take_profit.manage_profits(ALPACA_BASE, H_AL)
+    scale_outs = [a for a in acts if a['action'] == 'scale_out']
+    trails = [a for a in acts if a['action'] == 'trail']
+    if scale_outs:
+        lines = ['💰 *PROFIT-TAKING*'] + [f"  ↗ scaled out {a['symbol']} {a['qty']}sh @ +{a['gain_pct']}%" for a in scale_outs]
+        slack('\n'.join(lines))
+    slack(f"🛡 Profit-tiered trailing stops on {len(trails)} positions "
+          f"(5-8% trail · tighter as gains grow · {len(scale_outs)} scale-outs)")
     scorecard = job_scorecard()
-    return {'prep': prep, 'rebalance': rebal, 'trailing_stops': len(trails), 'scorecard': scorecard}
+    return {'prep': prep, 'rebalance': rebal, 'scale_outs': len(scale_outs),
+            'trailing_stops': len(trails), 'scorecard': scorecard}
 
 
 def dispatch():
