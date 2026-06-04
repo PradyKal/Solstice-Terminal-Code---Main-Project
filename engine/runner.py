@@ -13,6 +13,7 @@ from alpha.strategies_v2 import STRATEGIES, backtest_with_costs
 from alpha.ensemble import sharpe_weighted_ensemble, estimate_position_params, kelly_position_size
 from alpha import news_sentiment as news
 from alpha.risk_manager import RiskManager, PortfolioManager, SECTOR_OF
+from alpha import rigor
 
 # ─── CONFIG ─────
 SUPABASE_URL  = os.environ.get('SUPABASE_URL',  'https://roogtwurdmsdapgvaspk.supabase.co')
@@ -82,29 +83,34 @@ def job_prep():
     data, cached = data_cache.get_universe_data(UNIVERSE, period='2y', force_refresh=True)
     print(f'  data: {len(data)} tickers · cache_hit={cached}')
 
-    # Backtest each strategy (realistic walk-forward with costs + IC)
-    sharpes = {}
-    ics = {}
-    print('[PREP] backtesting strategies (cost-adjusted walk-forward)...')
+    # Backtest each strategy (realistic walk-forward with costs + IC + DEFLATED SHARPE)
+    sharpes = {}; ics = {}; dsrs = {}
+    n_trials = len(STRATEGIES)   # we test this many → deflate for selection bias
+    print('[PREP] backtesting strategies (cost-adjusted walk-forward + deflated Sharpe)...')
     for name, fn in STRATEGIES.items():
-        bt = backtest_with_costs(fn, data, lookback_days=180, hold_days=5, n_long=5, cost_bps=5)
+        bt = backtest_with_costs(fn, data, lookback_days=180, hold_days=5,
+                                 n_long=5, cost_bps=5, return_series=True)
         sharpes[name] = bt['sharpe']
         ics[name] = bt['ic']
-        print(f'  {name:22s} Sharpe {bt["sharpe"]:+.2f}  IC {bt["ic"]:+.3f}  win {bt["win_rate"]*100:.0f}%')
+        dsr = rigor.deflated_sharpe_ratio(bt.get('returns', []), n_trials=n_trials)
+        dsrs[name] = dsr
+        print(f'  {name:22s} Sharpe {bt["sharpe"]:+.2f}  IC {bt["ic"]:+.3f}  DSR {dsr:.2f}')
 
     # Run all strategies on current data
     scores = {name: fn(data) for name, fn in STRATEGIES.items()}
 
-    # STRONG filter: only deploy strategies with Sharpe >= 0.5 AND positive IC
-    # (negative-IC strategies like BAB in a momentum regime get zeroed out)
-    deployable = {n: s for n, s in scores.items()
-                  if sharpes.get(n, 0) >= 0.5 and ics.get(n, 0) > 0}
-    if not deployable:
-        deployable = scores   # safety fallback
-    # Weight by Sharpe × IC (reward both risk-adjusted return and predictive power)
-    blend_weights = {n: max(0.01, sharpes[n]) * max(0.01, ics.get(n, 0.01))
+    # RIGOROUS filter: prefer strategies that survive multiple-testing correction.
+    # Tier 1 (DSR>0.90 & IC>0): full confidence.  Tier 2 (Sharpe>=0.8 & IC>0):
+    # provisional while track record grows.  Negative-IC strategies excluded.
+    tier1 = {n: s for n, s in scores.items() if dsrs.get(n,0) > 0.90 and ics.get(n,0) > 0}
+    tier2 = {n: s for n, s in scores.items() if sharpes.get(n,0) >= 0.8 and ics.get(n,0) > 0}
+    deployable = tier1 if tier1 else (tier2 if tier2 else scores)
+    # Weight by (DSR floor) × Sharpe × IC — rewards statistical confidence + edge + predictive power
+    blend_weights = {n: max(0.05, dsrs.get(n,0.05)) * max(0.05, sharpes[n]) * max(0.01, ics.get(n,0.01))
                      for n in deployable}
     combined, weights = sharpe_weighted_ensemble(deployable, blend_weights, min_sharpe=0.0)
+    tier_used = 'DSR-validated' if tier1 else ('provisional(Sharpe)' if tier2 else 'fallback')
+    print(f'  deployment tier: {tier_used} · {len(deployable)} strategies')
 
     # ═══ FULL QUANT DESK PORTFOLIO CONSTRUCTION ═══
     acct = account()

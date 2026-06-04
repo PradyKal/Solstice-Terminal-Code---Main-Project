@@ -235,7 +235,7 @@ del STRATEGIES['asymmetric_recovery']
 
 # ─── REALISTIC BACKTEST with transaction costs + IC measurement ───
 def backtest_with_costs(strategy_fn, data, lookback_days=180, hold_days=5,
-                        n_long=5, cost_bps=5):
+                        n_long=5, cost_bps=5, return_series=False):
     """
     Walk-forward backtest:
       - rebuild signal at each step (no look-ahead)
@@ -274,10 +274,13 @@ def backtest_with_costs(strategy_fn, data, lookback_days=180, hold_days=5,
     rets = np.array(rets)
     ppy = 252 / hold_days
     sharpe = (rets.mean() * ppy) / (rets.std() * np.sqrt(ppy) + 1e-9)
-    return {
+    result = {
         'sharpe': float(sharpe),
         'total_return': float(np.prod(1 + rets) - 1),
         'ic': float(np.mean(ics)) if ics else 0.0,
         'win_rate': float((rets > 0).mean()),
         'n': len(rets),
     }
+    if return_series:
+        result['returns'] = rets.tolist()
+    return result
